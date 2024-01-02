@@ -44,7 +44,6 @@ namespace TamakenService.Services.TextFileFlter
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"時間: {DateTime.Now.ToString("G")} 獲取GetSNPIndexList: {filePath} 發生錯誤:{ex.Message}");
                 nlogService.LogError($"時間: {DateTime.Now.ToString("G")} 獲取GetSNPIndexList: {filePath} 發生錯誤:{ex.Message}");
                 throw;
             }
@@ -78,7 +77,6 @@ namespace TamakenService.Services.TextFileFlter
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"時間: {DateTime.Now.ToString("G")} 獲取GetSNPHashtable: {filePath} 發生錯誤:{ex.Message}");
                 nlogService.LogError($"時間: {DateTime.Now.ToString("G")} 獲取GetSNPHashtable: {filePath} 發生錯誤:{ex.Message}");
                 return ASASet;
             }
@@ -112,7 +110,6 @@ namespace TamakenService.Services.TextFileFlter
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"時間: {DateTime.Now.ToString("G")} 獲取SNPMathFeature: {filePath} 發生錯誤:{ex.Message}");
                 nlogService.LogError($"時間: {DateTime.Now.ToString("G")} 獲取SNPMathFeature: {filePath} 發生錯誤:{ex.Message}");
                 return ASASet;
             }

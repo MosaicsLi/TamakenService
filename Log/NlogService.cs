@@ -25,6 +25,16 @@ namespace TamakenService.Log
             LogManager.Configuration = config;
             _logger = LogManager.GetCurrentClassLogger();
         }
+        public void WriteLine(string message)
+        {
+            Console.WriteLine(message);
+            _logger.Info(message);
+        }
+        public string? ReadLine()
+        {
+            string? line = Console.ReadLine();
+            return line;
+        }
         public void LogInfo(string message)
         {
             _logger.Info(message);
@@ -32,6 +42,7 @@ namespace TamakenService.Log
 
         public void LogError(string message, System.Exception ex = null)
         {
+            Console.WriteLine(message);
             _logger.Error(ex, message);
         }
     }

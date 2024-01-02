@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using TamakenService.Log;
 
 namespace TamakenService.Services.TextFileFlter
 {
@@ -12,8 +13,10 @@ namespace TamakenService.Services.TextFileFlter
         private string rootPath;
         private List<string> directoryList;
         private HashSet<string> fileList;
-        public SampleFileGetter(string _rootPath)
+        private NlogService nlogService;
+        public SampleFileGetter(string _rootPath, NlogService _nlogService)
         {
+            nlogService = _nlogService;
             rootPath = _rootPath;
             SetDirectoryList();
             SetFileList();
@@ -48,33 +51,33 @@ namespace TamakenService.Services.TextFileFlter
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"查詢filePath: {rootPath} 發生錯誤:{ex.Message}");
+                nlogService.WriteLine($"查詢filePath: {rootPath} 發生錯誤:{ex.Message}");
             }
-            Console.WriteLine($"已讀取根目錄: {rootPath} 總共有: {directoryList.Count} 個資料夾");
+            nlogService.WriteLine($"已讀取根目錄: {rootPath} 總共有: {directoryList.Count} 個資料夾");
         }
         private void SetFileList()
         {
             fileList = new HashSet<string>();
             foreach (var folder in directoryList)
             {
-                Console.WriteLine($"正在讀取資料夾: {folder}");
+                nlogService.WriteLine($"正在讀取資料夾: {folder}");
                 string[] txtFiles = Directory.GetFiles(folder, "*.txt");
                 foreach (string file in txtFiles)
                 {
                     if (file.Contains("Sample_Map"))
                     {
-                        Console.WriteLine($"已排除Sample_Map:{file}");
+                        nlogService.WriteLine($"已排除Sample_Map:{file}");
                         continue;
                     }
                     if (file.Contains("SNP_Map"))
                     {
-                        Console.WriteLine($"已排除SNP_Map:{file}");
+                        nlogService.WriteLine($"已排除SNP_Map:{file}");
                         continue;
                     }
                     fileList.Add(file);
                 }
             }
-            Console.WriteLine($"總共有: {fileList.Count} 個Sample資料");
+            nlogService.WriteLine($"總共有: {fileList.Count} 個Sample資料");
 
         }
     }

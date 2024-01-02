@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using TamakenService.Log;
 using TamakenService.Models.TextFileFilter;
 using TamakenService.Services.Sqlite;
 
@@ -14,13 +15,16 @@ namespace TamakenService.Services.TextFileFlter
     {
         private string filePath;
         private SampleModel sampleData;
-        public ReadSampleData()
+        private NlogService nlogService;
+        public ReadSampleData(NlogService _nlogService)
         {
             filePath = @"C:\cubic\Chip\";
+            nlogService = _nlogService;
         }
-        public ReadSampleData(string _filePath)
+        public ReadSampleData(string _filePath, NlogService _nlogService)
         {
             filePath = _filePath;
+            nlogService= _nlogService;
             ReadSNPDataFromFile();
         }
         public SampleModel SampleData
@@ -59,6 +63,7 @@ namespace TamakenService.Services.TextFileFlter
                         if (string.IsNullOrEmpty(sampleData.SampleID))
                         {
                             sampleData.SampleID = values[1];
+                            nlogService.WriteLine($"正在讀取SampleID: {sampleData.SampleID} 資料");
                         }
                         SNPData snpData = new SNPData
                         {
@@ -71,6 +76,7 @@ namespace TamakenService.Services.TextFileFlter
                     else if (line.Trim() == "[Data]")
                     {
                         foundDataSection = true;
+                        nlogService.WriteLine($"已讀取到標籤: {line.Trim()} ,後續讀取到的資料將做為Sample資料");
                     }
                 }
                 sampleData.SNPData = snpDataList;
@@ -88,104 +94,41 @@ namespace TamakenService.Services.TextFileFlter
         public Hashtable SNPDataToMathHashtable(Hashtable SNPMathFeature)
         {
             Hashtable snpDataSet = new Hashtable();
-            string validLetters = "ATGC";
+            string validLetters = "-";
+            string geneValidLetters = "ATCG";
             foreach (SNPData sample in sampleData.SNPData)
             {
-                if (!validLetters.Contains(sample.Allele1) || !validLetters.Contains(sample.Allele2))
+                if (validLetters.Contains(sample.Allele1) || validLetters.Contains(sample.Allele2))
                 {
                     snpDataSet.Add(sample.SNP, "");
+                    //nlogService.WriteLine($"Sample資料異常: {sample.Allele1}/{sample.Allele2} 此筆資料將不會被轉為數據並將資料留空");
                     continue;
                 }
                 if (SNPMathFeature.ContainsKey(sample.SNP))
                 {
-                    int Allele1 = SNPMathFeature[sample.SNP].Equals(sample.Allele1) ? 1 : 0;
-                    int Allele2 = SNPMathFeature[sample.SNP].Equals(sample.Allele2) ? 1 : 0;
-                    int AlleleSum = Allele1 + Allele2;
-                    snpDataSet.Add(sample.SNP, $"{AlleleSum}");
-                }
-            }
-            return snpDataSet;
-        }
-        /*
-        public Hashtable ReadSNPDataHashtable()
-        {
-            Hashtable snpDataSet = new Hashtable();
-            bool foundDataSection = false;
-
-            using (StreamReader reader = new StreamReader(filePath))
-            {
-                string line;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    if (foundDataSection)
+                    int Allele1 = -1;
+                    int Allele2 = -1;
+                    if (geneValidLetters.Contains(sample.Allele1))
                     {
-                        if (!string.IsNullOrWhiteSpace(line))
-                        {
-                            string[] values = line.Split('\t'); // 假設資料以制表符分隔
-
-                            // 確保有足夠的資料列來創建 SNPData 物件
-                            if (values.Length >= 8)
-                            {
-                                SampleID = values[1];
-                                snpDataSet.Add(values[0], $"{values[5]}/{values[6]}");
-                            }
-                        }
+                        Allele1 = SNPMathFeature[sample.SNP].Equals(sample.Allele1) ? 1 : 0;
                     }
-                    else if (line.Trim() == "[Data]")
+                    if (geneValidLetters.Contains(sample.Allele2))
                     {
-                        foundDataSection = true;
+                        Allele2 = SNPMathFeature[sample.SNP].Equals(sample.Allele2) ? 1 : 0;
+                    }
+                    if(Allele1>-1 && Allele2 > -1)
+                    {
+                        int AlleleSum = Allele1 + Allele2;
+                        snpDataSet.Add(sample.SNP, $"{AlleleSum}");
+                    }
+                    else
+                    {
+                        snpDataSet.Add(sample.SNP, $"{sample.Allele1}/{sample.Allele2}");
                     }
                 }
             }
             return snpDataSet;
         }
-
-        public Hashtable ReadSNPMathHashtable(Hashtable SNPMathFeature)
-        {
-            Hashtable snpDataSet = new Hashtable();
-            bool foundDataSection = false;
-            string validLetters = "ATGC";
-
-            using (StreamReader reader = new StreamReader(filePath))
-            {
-                string line;
-                while ((line = reader.ReadLine()) != null)
-                {
-                    if (foundDataSection)
-                    {
-                        if (!string.IsNullOrWhiteSpace(line))
-                        {
-                            string[] values = line.Split('\t'); // 假設資料以制表符分隔
-
-                            // 確保有足夠的資料列來創建 SNPData 物件
-                            if (values.Length >= 8)
-                            {
-                                if (!validLetters.Contains(values[5]) || !validLetters.Contains(values[6]))
-                                {
-                                    snpDataSet.Add(values[0], "");
-                                    continue;
-                                }
-                                SampleID = values[1];
-                                if (SNPMathFeature.ContainsKey(values[0]))
-                                {
-                                    int Allele1 = (SNPMathFeature[values[0]].Equals(values[5])) ? 1 : 0;
-                                    int Allele2 = (SNPMathFeature[values[0]].Equals(values[6])) ? 1 : 0;
-                                    int AlleleSum = Allele1 + Allele2;
-                                    snpDataSet.Add(values[0], $"{AlleleSum}");
-                                }
-                            }
-                        }
-                    }
-                    else if (line.Trim() == "[Data]")
-                    {
-                        foundDataSection = true;
-                    }
-                }
-            }
-            return snpDataSet;
-        }
-        */
-
         
     }
 }
