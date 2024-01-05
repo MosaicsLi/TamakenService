@@ -20,22 +20,22 @@ namespace TamakenService.Services.TextFileFlter
             nlogService = _nlogService;
             ASAToGWASTable = _ASAToGWASTable;
         }
-        public void SaveSetToMathCSV(HashSet<ReadSampleData> sampleSet, Hashtable SNPMathFeature, string outputPath)
+        public void SaveSetToMathCSV(HashSet<ExportSampleData> sampleSet, string outputPath)
         {
             foreach (var sample in sampleSet)
             {
                 nlogService.WriteLine($"執行續開始輸出 數據資料");
-                SaveToMathCSV(sample, SNPMathFeature, outputPath);
-                nlogService.WriteLine($"輸出 {sample.SampleData.SampleID} 數據資料完畢");
+                SaveToMathCSV(sample, outputPath);
+                nlogService.WriteLine($"輸出 {sample.SampleID} 數據資料完畢");
             }
         }
-        public void SaveSetToCSV(HashSet<ReadSampleData> sampleSet, string outputPath)
+        public void SaveSetToCSV(HashSet<ExportSampleData> sampleSet, string outputPath)
         {
             foreach (var sample in sampleSet)
             {
                 nlogService.WriteLine($"執行續開始輸出 基因資料");
                 SaveToCSV(sample, outputPath);
-                nlogService.WriteLine($"輸出 {sample.SampleData.SampleID} 基因完畢");
+                nlogService.WriteLine($"輸出 {sample.SampleID} 基因完畢");
             }
         }
         private void writeTitle(StreamWriter writer, List<string> SNPIndexList)
@@ -57,11 +57,11 @@ namespace TamakenService.Services.TextFileFlter
             lineBuilder.Append($",Path");
             writer.WriteLine(lineBuilder.ToString());
         }
-        public void SaveToCSV(ReadSampleData sample, string outputPath)
+        public void SaveToCSV(ExportSampleData sample, string outputPath)
         {
             try
             {
-                var SampleSNPSet = sample.SNPDataToHash();
+                var SampleSNPSet = sample.SNPDataHashtable;
                 bool fileExists = File.Exists(outputPath);
                 using (StreamWriter writer = new StreamWriter(outputPath, true))
                 {
@@ -71,8 +71,8 @@ namespace TamakenService.Services.TextFileFlter
                     }
 
                     StringBuilder lineBuilder = new StringBuilder();
-                    lineBuilder.Append($"{sample.SampleData.SampleID}");
-                    nlogService.WriteLine($"正在輸出 Sample:{sample.SampleData.SampleID} 的基因資料 Sample位置 {sample.FilePath}");
+                    lineBuilder.Append($"{sample.SampleID}");
+                    nlogService.WriteLine($"正在輸出 Sample:{sample.SampleID} 的基因資料 Sample位置 {sample.FilePath}");
                     foreach (string SNP in SNPIndexList)
                     {
 
@@ -86,6 +86,7 @@ namespace TamakenService.Services.TextFileFlter
                     lineBuilder.Append($",{sample.FilePath}");
                     writer.WriteLine(lineBuilder.ToString());
                 }
+                SampleSNPSet = null;
             }
             catch (Exception ex)
             {
@@ -95,11 +96,11 @@ namespace TamakenService.Services.TextFileFlter
                 nlogService.WriteLine($"Exception:{ex.Message}");
             }
         }
-        public void SaveToMathCSV(ReadSampleData sample, Hashtable SNPMathFeature, string outputPath)
+        public void SaveToMathCSV(ExportSampleData sample, string outputPath)
         {
             try
             {
-                var SampleSNPSet = sample.SNPDataToMathHashtable(SNPMathFeature);
+                var SampleSNPSet = sample.SNPDataMathHash;
                 bool fileExists = File.Exists(outputPath);
                 using (StreamWriter writer = new StreamWriter(outputPath, true))
                 {
@@ -109,8 +110,8 @@ namespace TamakenService.Services.TextFileFlter
                     }
 
                     StringBuilder lineBuilder = new StringBuilder();
-                    lineBuilder.Append($"{sample.SampleData.SampleID}");
-                    nlogService.WriteLine($"正在輸出 Sample:{sample.SampleData.SampleID} 的數據資料 Sample位置 {sample.FilePath}");
+                    lineBuilder.Append($"{sample.SampleID}");
+                    nlogService.WriteLine($"正在輸出 Sample:{sample.SampleID} 的數據資料 Sample位置 {sample.FilePath}");
                     foreach (string SNP in SNPIndexList)
                     {
                         lineBuilder.Append($",");
@@ -122,6 +123,7 @@ namespace TamakenService.Services.TextFileFlter
                     lineBuilder.Append($",{sample.FilePath}");
                     writer.WriteLine(lineBuilder.ToString());
                 }
+                SampleSNPSet = null;
             }
             catch (Exception ex)
             {

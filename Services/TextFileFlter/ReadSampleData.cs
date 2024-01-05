@@ -30,6 +30,7 @@ namespace TamakenService.Services.TextFileFlter
         public SampleModel SampleData
         {
             get { return sampleData; }
+            set { sampleData = value; }
         }
         public string FilePath
         {

@@ -19,4 +19,12 @@ namespace TamakenService.Models.TextFileFilter
         public string Allele2 { get; set; }
 
     }
+    public class ExportSampleData
+    {
+        public string SampleID { get; set; }
+        public string FilePath { get; set; }
+        public Hashtable SNPDataHashtable { get; set; }
+        public Hashtable SNPDataMathHash { get; set; }
+
+    }
 }
