@@ -10,7 +10,7 @@ namespace TamakenService.Models.TextFileFilter
     public class SampleModel
     {
         public string SampleID { get; set; }
-        public List<SNPData> SNPData { get; set;}
+        public HashSet<SNPData> SNPData { get; set;}
     }
     public class SNPData
     {

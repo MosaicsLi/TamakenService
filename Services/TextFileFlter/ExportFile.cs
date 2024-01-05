@@ -38,6 +38,25 @@ namespace TamakenService.Services.TextFileFlter
                 nlogService.WriteLine($"輸出 {sample.SampleData.SampleID} 基因完畢");
             }
         }
+        private void writeTitle(StreamWriter writer, List<string> SNPIndexList)
+        {
+            StringBuilder lineBuilder = new StringBuilder();
+            lineBuilder.Append($"SampleID_GWAS");
+            foreach (string SNP in SNPIndexList)
+            {
+                lineBuilder.Append($",{ASAToGWASTable[SNP]}");
+            }
+            writer.WriteLine(lineBuilder.ToString());
+            lineBuilder.Clear();
+
+            lineBuilder.Append($"SampleID_ASA");
+            foreach (string SNP in SNPIndexList)
+            {
+                lineBuilder.Append($",{SNP}");
+            }
+            lineBuilder.Append($",Path");
+            writer.WriteLine(lineBuilder.ToString());
+        }
         public void SaveToCSV(ReadSampleData sample, string outputPath)
         {
             try
@@ -48,33 +67,24 @@ namespace TamakenService.Services.TextFileFlter
                 {
                     if (!fileExists)
                     {
-                        writer.Write($"SampleID_GWAS");
-                        foreach (string SNP in SNPIndexList)
-                        {
-                            writer.Write($",{ASAToGWASTable[SNP]}");
-                        }
-                        writer.WriteLine();
-
-                        writer.Write($"SampleID_ASA");
-                        foreach (string SNP in SNPIndexList)
-                        {
-                            writer.Write($",{SNP}");
-                        }
-                        writer.Write($",Path");
-                        writer.WriteLine();
+                        writeTitle(writer, SNPIndexList);
                     }
-                    writer.Write($"{sample.SampleData.SampleID}");
+
+                    StringBuilder lineBuilder = new StringBuilder();
+                    lineBuilder.Append($"{sample.SampleData.SampleID}");
                     nlogService.WriteLine($"正在輸出 Sample:{sample.SampleData.SampleID} 的基因資料 Sample位置 {sample.FilePath}");
                     foreach (string SNP in SNPIndexList)
                     {
-                        writer.Write($",");
+
+                        lineBuilder.Append(",");
                         if (SampleSNPSet.ContainsKey(SNP))
                         {
-                            writer.Write($"{SampleSNPSet[SNP]}");
+                            lineBuilder.Append($"{SampleSNPSet[SNP]}");
                         }
                     }
-                    writer.Write($",{sample.FilePath}");
-                    writer.WriteLine();
+
+                    lineBuilder.Append($",{sample.FilePath}");
+                    writer.WriteLine(lineBuilder.ToString());
                 }
             }
             catch (Exception ex)
@@ -95,33 +105,22 @@ namespace TamakenService.Services.TextFileFlter
                 {
                     if (!fileExists)
                     {
-                        writer.Write($"SampleID_GWAS");
-                        foreach (string SNP in SNPIndexList)
-                        {
-                            writer.Write($",{ASAToGWASTable[SNP]}");
-                        }
-                        writer.WriteLine();
-
-                        writer.Write($"SampleID_ASA");
-                        foreach (string SNP in SNPIndexList)
-                        {
-                            writer.Write($",{SNP}");
-                        }
-                        writer.Write($",Path");
-                        writer.WriteLine();
+                        writeTitle(writer, SNPIndexList);
                     }
-                    writer.Write($"{sample.SampleData.SampleID}");
+
+                    StringBuilder lineBuilder = new StringBuilder();
+                    lineBuilder.Append($"{sample.SampleData.SampleID}");
                     nlogService.WriteLine($"正在輸出 Sample:{sample.SampleData.SampleID} 的數據資料 Sample位置 {sample.FilePath}");
                     foreach (string SNP in SNPIndexList)
                     {
-                        writer.Write($",");
+                        lineBuilder.Append($",");
                         if (SampleSNPSet.ContainsKey(SNP))
                         {
-                            writer.Write($"{SampleSNPSet[SNP]}");
+                            lineBuilder.Append($"{SampleSNPSet[SNP]}");
                         }
                     }
-                    writer.Write($",{sample.FilePath}");
-                    writer.WriteLine();
+                    lineBuilder.Append($",{sample.FilePath}");
+                    writer.WriteLine(lineBuilder.ToString());
                 }
             }
             catch (Exception ex)
