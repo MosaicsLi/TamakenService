@@ -10,6 +10,7 @@ namespace TamakenService.Log
     public class NlogService
     {
         private ILogger _logger;
+        private bool isDebugMod = false;
         public NlogService(string logFilePath)
         {
             var config = new NLog.Config.LoggingConfiguration();
@@ -25,9 +26,26 @@ namespace TamakenService.Log
             LogManager.Configuration = config;
             _logger = LogManager.GetCurrentClassLogger();
         }
-        public void WriteLine(string message)
+
+        public NlogService(string logFilePath, bool _IsDebugMod)
         {
-            Console.WriteLine(message);
+            var config = new NLog.Config.LoggingConfiguration();
+            isDebugMod = _IsDebugMod;
+            var fileTarget = new NLog.Targets.FileTarget("fileTarget")
+            {
+                FileName = logFilePath,
+                Layout = "${longdate} ${level} ${message} ${exception:format=tostring}"
+            };
+
+            config.AddRuleForAllLevels(fileTarget);
+
+            LogManager.Configuration = config;
+            _logger = LogManager.GetCurrentClassLogger();
+        }
+        public bool IsDebugMod { get { return isDebugMod; } set { isDebugMod = value; } }
+        public void WriteLine(string message,bool debubmod=false)
+        {
+            if (isDebugMod || debubmod) Console.WriteLine(message);
             _logger.Info(message);
         }
         public string? ReadLine()

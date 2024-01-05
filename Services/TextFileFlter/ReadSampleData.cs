@@ -45,6 +45,8 @@ namespace TamakenService.Services.TextFileFlter
             List<SNPData> snpDataList = new List<SNPData>();
             sampleData = new SampleModel();
             bool foundDataSection = false;
+            int SNPIndex=0, Allele1Index = 0, Allele2Index = 0;
+            int index = 0;
             using (StreamReader reader = new StreamReader(filePath))
             {
                 string line;
@@ -58,7 +60,30 @@ namespace TamakenService.Services.TextFileFlter
 
                         // 確保有足夠的資料列來創建 SNPData 物件
                         if (values.Length < 8) continue;
-                        if (values[1].ToLower().Equals("sample id")) continue;
+                        if (values[1].ToLower().Equals("sample id"))
+                        {
+                            foreach (string value in values)
+                            {
+                                switch(value.Replace(" ","").ToLower())
+                                {
+                                    case "snpname":
+                                        nlogService.WriteLine($"SNPIndex: {index}");
+                                        SNPIndex = index;
+                                        break;
+                                    case "allele1-forward":
+                                        nlogService.WriteLine($"Allele1Index: {index}");
+                                        Allele1Index = index;
+                                        break;
+                                    case "allele2-forward":
+                                        nlogService.WriteLine($"Allele2Index: {index}");
+                                        Allele2Index = index;
+                                        break;
+                                    default: break;
+                                }
+                                index++;
+                            }
+                            continue;
+                        }
 
                         if (string.IsNullOrEmpty(sampleData.SampleID))
                         {
@@ -67,9 +92,9 @@ namespace TamakenService.Services.TextFileFlter
                         }
                         SNPData snpData = new SNPData
                         {
-                            SNP = values[0],
-                            Allele1 = values[5],
-                            Allele2 = values[6]
+                            SNP = values[SNPIndex],
+                            Allele1 = values[Allele1Index],
+                            Allele2 = values[Allele2Index]
                         };
                         snpDataList.Add(snpData);
                     }
