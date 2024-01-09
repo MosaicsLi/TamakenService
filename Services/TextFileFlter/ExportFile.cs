@@ -20,6 +20,16 @@ namespace TamakenService.Services.TextFileFlter
             nlogService = _nlogService;
             ASAToGWASTable = _ASAToGWASTable;
         }
+        public void SaveFilePath(string filePath, HashSet<string> fileList)
+        {
+            using (StreamWriter writer = new StreamWriter(filePath, true))
+            {
+                foreach (string file in fileList)
+                {
+                    writer.WriteLine($"{file},N");
+                }
+            }
+        }
         public void SaveSetToMathCSV(HashSet<ExportSampleData> sampleSet, string outputPath)
         {
             foreach (var sample in sampleSet)

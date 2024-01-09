@@ -14,6 +14,10 @@ namespace TamakenService.Services.TextFileFlter
         private List<string> directoryList;
         private HashSet<string> fileList;
         private NlogService nlogService;
+        public SampleFileGetter(NlogService _nlogService)
+        {
+            nlogService = _nlogService;
+        }
         public SampleFileGetter(string _rootPath, NlogService _nlogService)
         {
             nlogService = _nlogService;
@@ -79,6 +83,53 @@ namespace TamakenService.Services.TextFileFlter
             }
             nlogService.WriteLine($"總共有: {fileList.Count} 個Sample資料");
 
+        }
+        public void GetFileFromCsv(string filePath)
+        {
+            // 讀取原始 CSV 檔案
+            fileList = new HashSet<string>();
+            using (StreamReader reader = new StreamReader(filePath))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    var CsvData = line.Split(",");
+                    if (CsvData[1].Equals("N"))
+                    {
+                        fileList.Add(CsvData[0]);
+                        nlogService.WriteLine($"資料已讀取: {CsvData[0]}");
+                    }
+                }
+            }
+            nlogService.WriteLine($"此次資料已讀取: {fileList.Count} 個Sample資料");
+        }
+        public void UpdateCsvFile(string filePath, HashSet<string> batch)
+        {
+            // 讀取原始 CSV 檔案
+            List<string> lines = new List<string>();
+            using (StreamReader reader = new StreamReader(filePath))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    var CsvData = line.Split(",");
+                    if (batch.Contains(CsvData[0]))
+                    {
+                        line = line.Replace(",N", ",Y");
+                        nlogService.WriteLine($"已標記為讀取完畢: {CsvData[0]}");
+                    }
+                    lines.Add(line);
+                }
+            }
+
+            // 寫入更新後的 CSV 檔案
+            using (StreamWriter writer = new StreamWriter(filePath))
+            {
+                foreach (string line in lines)
+                {
+                    writer.WriteLine(line);
+                }
+            }
         }
     }
 }
