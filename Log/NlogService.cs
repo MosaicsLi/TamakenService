@@ -7,10 +7,25 @@ using System.Threading.Tasks;
 
 namespace TamakenService.Log
 {
-    public class NlogService
+    public class NlogService 
     {
         private ILogger _logger;
         private bool isDebugMod = false;
+        public NlogService()
+        {
+            var config = new NLog.Config.LoggingConfiguration();
+
+            var fileTarget = new NLog.Targets.FileTarget("fileTarget")
+            {
+                FileName = $"log/{DateTime.Now.ToString("yyyyMMdd")}.log",
+                Layout = "${longdate} ${level} ${message} ${exception:format=tostring}"
+            };
+
+            config.AddRuleForAllLevels(fileTarget);
+
+            LogManager.Configuration = config;
+            _logger = LogManager.GetCurrentClassLogger();
+        }
         public NlogService(string logFilePath)
         {
             var config = new NLog.Config.LoggingConfiguration();
@@ -64,4 +79,5 @@ namespace TamakenService.Log
             _logger.Error(ex, message);
         }
     }
+
 }
